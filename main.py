@@ -178,6 +178,7 @@ if __name__ == '__main__':
     crawlRottenTomatoesReviews("https://www.rottentomatoes.com/tv/game-of-thrones/s08/reviews", "https://www.rottentomatoes.com",
                                mustExcludeAll=["www.rottentomatoes.com"])
 
+
     # Build a function to filter out links with certain keywords
     # Filter out links that contain rotten tomatoes in it at all so I can exclusively get non rotten tomatoe links
 
