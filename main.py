@@ -38,10 +38,9 @@ def frequncy(text_tokens: list[str]):
 
 
 def getWebpage(URL: str):
-    print(string.punctuation)
     html = request.urlopen(URL).read().decode('utf8')
     soup = BeautifulSoup(html, features="html.parser")
-    text = soup.get_text()
+    text = soup.prettify()
 
     # response = requests.get(URL)
     # soup = BeautifulSoup(response.text, features="html.parser")
@@ -61,5 +60,110 @@ def webCrawler():
     pass
 
 
+def getBodyText(URL: str, tokensLength: int = 5, DEBUG: bool = False):
+    # response = request.urlopen(URL).read().decode('utf8')
+    # soup = BeautifulSoup(response, features="html.parser")
+    # text = soup.get_text()
+
+    response = requests.get(URL)
+    soup = BeautifulSoup(response.text, features="html.parser")
+    text = soup.get_text()
+
+    # tokens = text.splitlines()
+    # newToks = [line for line in tokens if len(line.split()) > tokensLength]
+    # print(newToks)
+    # #print(text)
+
+    tags = soup.body
+
+    bodySents = [str(line).strip() for line in soup.body.strings if len(line.strip().split()) > tokensLength
+                 and line.find("©") == -1]
+
+    if DEBUG:
+        print(bodySents)
+
+
+    # import re
+    # text_chunks = [chunk for chunk in bodySents if not re.match(r'^\s*$', chunk)]
+    # for i, chunk in enumerate(text_chunks):
+    #     print(i + 1, chunk)
+
+    return bodySents
+
+
+def containsAll(line: str, MustIncludeList: list[str]):
+
+    for expr in MustIncludeList:
+        if line.find(expr) == -1:
+            return False
+    return True
+
+
+def crawlRottenTomatoesReviews(URL: str, baseURL: str, mustIncludeList: list[str]):
+    response = requests.get(URL)
+    soup = BeautifulSoup(response.text, features="html.parser")
+
+    links = soup.select('a')
+
+    outLinks = []
+    #print(links)
+    # Print out the result
+    for link in links:
+        #print(link.get_text())
+        line = str(link.get('href'))
+        if line != "None":
+            if containsAll(line, mustIncludeList):
+
+                if 'https://' in line:
+                    # print(link.get('href'))
+                    outLinks.append(link.get("href"))
+                else:
+                    # print(baseURL + link.get('href'))
+                    outLinks.append(baseURL + link.get("href"))
+
+
+    print(outLinks)
+
+    return links
+
+
+def crawlRottenTomatoes(URL: str, baseURL: str, mustIncludeList: list[str]):
+    response = requests.get(URL)
+    soup = BeautifulSoup(response.text, features="html.parser")
+
+    links = soup.select('a')
+
+    outLinks = []
+    #print(links)
+    # Print out the result
+    for link in links:
+        #print(link.get_text())
+        line = str(link.get('href'))
+        if line != "None":
+            if containsAll(line, mustIncludeList):
+
+                if 'https://' in line:
+                    # print(link.get('href'))
+                    outLinks.append(link.get("href"))
+                else:
+                    # print(baseURL + link.get('href'))
+                    outLinks.append(baseURL + link.get("href"))
+            # for expr in mustIncludeList:
+            #     if line.find(expr) != -1:
+            #         if 'https://' in line:
+            #             # print(link.get('href'))
+            #             outLinks.append(link.get("href"))
+            #         else:
+            #             # print(baseURL + link.get('href'))
+            #             outLinks.append(baseURL + link.get("href"))
+
+    print(outLinks)
+
+    return links
+
+
 if __name__ == '__main__':
-    getWebpage("https://gameofthrones.fandom.com/wiki/Jon_Snow")
+    #test("https://gameofthrones.fandom.com/wiki/Jon_Snow")
+    getBodyText("https://www.nme.com/reviews/game-thrones-season-8-episode-1-review-game-reunions-winterfell-night-king-pivots-art-installations-2476817")
+    crawlRottenTomatoes("https://www.rottentomatoes.com/tv/game-of-thrones", "https://www.rottentomatoes.com", ["tv", "game-of-throne"])
+    crawlRottenTomatoes("https://www.rottentomatoes.com/tv/game-of-thrones/s08/reviews", "https://www.rottentomatoes.com", ["tv", "game-of-throne"])
