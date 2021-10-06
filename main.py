@@ -8,8 +8,8 @@ from nltk.corpus import stopwords
 import string
 
 import requests
-import selenium
-import lxml
+# import selenium
+# import lxml
 
 
 def pre_process(text: str):
@@ -91,15 +91,23 @@ def getBodyText(URL: str, tokensLength: int = 5, DEBUG: bool = False):
     return bodySents
 
 
-def containsAll(line: str, MustIncludeList: list[str]):
+def containsAny(line: str, AnyIncludeList: list[str]):
+    if len(AnyIncludeList) == 0:
+        return True
+    for expr in AnyIncludeList:
+        if line.find(expr) != -1:
+            return True
+    return False
 
+def containsAll(line: str, MustIncludeList: list[str]):
     for expr in MustIncludeList:
         if line.find(expr) == -1:
             return False
     return True
 
 
-def crawlRottenTomatoesReviews(URL: str, baseURL: str, mustIncludeList: list[str]):
+def crawlRottenTomatoesReviews(URL: str, baseURL: str, mustIncludeAll: list[str] = [], mustIncludeAny: list[str] = [],
+                               mustExcludeAll: list[str] = [], mustExcludeAny: list[str] = []):
     response = requests.get(URL)
     soup = BeautifulSoup(response.text, features="html.parser")
 
@@ -112,7 +120,8 @@ def crawlRottenTomatoesReviews(URL: str, baseURL: str, mustIncludeList: list[str
         #print(link.get_text())
         line = str(link.get('href'))
         if line != "None":
-            if containsAll(line, mustIncludeList):
+            if containsAll(line, mustIncludeAll) and containsAny(line, mustIncludeAny) \
+                    and not (containsAll(line, mustExcludeAll) or containsAny(line, mustExcludeAny)):
 
                 if 'https://' in line:
                     # print(link.get('href'))
@@ -166,7 +175,8 @@ if __name__ == '__main__':
     #test("https://gameofthrones.fandom.com/wiki/Jon_Snow")
     getBodyText("https://www.nme.com/reviews/game-thrones-season-8-episode-1-review-game-reunions-winterfell-night-king-pivots-art-installations-2476817")
     crawlRottenTomatoes("https://www.rottentomatoes.com/tv/game-of-thrones", "https://www.rottentomatoes.com", ["tv", "game-of-throne"])
-    crawlRottenTomatoes("https://www.rottentomatoes.com/tv/game-of-thrones/s08/reviews", "https://www.rottentomatoes.com", [])
+    crawlRottenTomatoesReviews("https://www.rottentomatoes.com/tv/game-of-thrones/s08/reviews", "https://www.rottentomatoes.com",
+                               mustExcludeAll=["www.rottentomatoes.com"])
 
     # Build a function to filter out links with certain keywords
     # Filter out links that contain rotten tomatoes in it at all so I can exclusively get non rotten tomatoe links
