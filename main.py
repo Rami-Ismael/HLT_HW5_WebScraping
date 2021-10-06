@@ -166,4 +166,4 @@ if __name__ == '__main__':
     #test("https://gameofthrones.fandom.com/wiki/Jon_Snow")
     getBodyText("https://www.nme.com/reviews/game-thrones-season-8-episode-1-review-game-reunions-winterfell-night-king-pivots-art-installations-2476817")
     crawlRottenTomatoes("https://www.rottentomatoes.com/tv/game-of-thrones", "https://www.rottentomatoes.com", ["tv", "game-of-throne"])
-    crawlRottenTomatoes("https://www.rottentomatoes.com/tv/game-of-thrones/s08/reviews", "https://www.rottentomatoes.com", ["tv", "game-of-throne"])
+    crawlRottenTomatoes("https://www.rottentomatoes.com/tv/game-of-thrones/s08/reviews", "https://www.rottentomatoes.com", [])
