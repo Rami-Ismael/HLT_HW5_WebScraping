@@ -1,3 +1,4 @@
+import re
 import urllib
 from urllib import request
 import urllib.request
@@ -105,78 +106,51 @@ def containsAll(line: str, MustIncludeList: list[str]):
             return False
     return True
 
-
+pageNumPattern = re.compile(r"(\?page=)\d+$")
 def crawlRottenTomatoesReviews(URL: str, baseURL: str, mustIncludeAll: list[str] = [], mustIncludeAny: list[str] = [],
-                               mustExcludeAll: list[str] = [], mustExcludeAny: list[str] = []):
-    response = requests.get(URL)
-    soup = BeautifulSoup(response.text, features="html.parser")
+                               mustExcludeAll: list[str] = [], mustExcludeAny: list[str] = [],
+                               debug: bool = False, pageNum: int = 1, linksLenLimit: int = 1):
 
+    if (pageNumPattern.search(URL) != None):
+        response = requests.get(URL)
+    else:
+        response = requests.get(URL + f"?page={pageNum}")
+    soup = BeautifulSoup(response.text, features="html.parser")
     links = soup.select('a')
 
     outLinks = []
-    #print(links)
-    # Print out the result
     for link in links:
         #print(link.get_text())
         line = str(link.get('href'))
         if line != "None":
+            if not 'https://' in line:
+                line = baseURL + line
             if containsAll(line, mustIncludeAll) and containsAny(line, mustIncludeAny) \
                     and not (containsAll(line, mustExcludeAll) and containsAny(line, mustExcludeAny)):
+                outLinks.append(line)
 
-                if 'https://' in line:
-                    # print(link.get('href'))
-                    outLinks.append(link.get("href"))
-                else:
-                    # print(baseURL + link.get('href'))
-                    outLinks.append(baseURL + link.get("href"))
+    if debug:
+        print(outLinks)
+
+    if len(outLinks) < linksLenLimit:
+        return outLinks
+    else:
+        newLinks = crawlRottenTomatoesReviews(URL, baseURL, mustIncludeAll, mustIncludeAny, mustExcludeAll, mustExcludeAny, debug, pageNum + 1, linksLenLimit)
+        if len(newLinks) == 0:
+            return outLinks
+        else:
+            return outLinks.extend(newLinks)
 
 
-    print(outLinks)
 
-    return links
-
-
-def crawlRottenTomatoes(URL: str, baseURL: str, mustIncludeList: list[str]):
-    response = requests.get(URL)
-    soup = BeautifulSoup(response.text, features="html.parser")
-
-    links = soup.select('a')
-
-    outLinks = []
-    #print(links)
-    # Print out the result
-    for link in links:
-        #print(link.get_text())
-        line = str(link.get('href'))
-        if line != "None":
-            if containsAll(line, mustIncludeList):
-
-                if 'https://' in line:
-                    # print(link.get('href'))
-                    outLinks.append(link.get("href"))
-                else:
-                    # print(baseURL + link.get('href'))
-                    outLinks.append(baseURL + link.get("href"))
-            # for expr in mustIncludeList:
-            #     if line.find(expr) != -1:
-            #         if 'https://' in line:
-            #             # print(link.get('href'))
-            #             outLinks.append(link.get("href"))
-            #         else:
-            #             # print(baseURL + link.get('href'))
-            #             outLinks.append(baseURL + link.get("href"))
-
-    print(outLinks)
-
-    return links
 
 
 if __name__ == '__main__':
     #test("https://gameofthrones.fandom.com/wiki/Jon_Snow")
     getBodyText("https://www.nme.com/reviews/game-thrones-season-8-episode-1-review-game-reunions-winterfell-night-king-pivots-art-installations-2476817")
-    crawlRottenTomatoes("https://www.rottentomatoes.com/tv/game-of-thrones", "https://www.rottentomatoes.com", ["tv", "game-of-throne"])
+
     crawlRottenTomatoesReviews("https://www.rottentomatoes.com/tv/game-of-thrones/s08/reviews", "https://www.rottentomatoes.com",
-                               mustExcludeAll=["rottentomatoes"])
+                               mustExcludeAny=["rottentomatoes", "youtube", "cookies"], pageNum=1)
 
 
     # Build a function to filter out links with certain keywords
