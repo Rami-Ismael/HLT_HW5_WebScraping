@@ -121,7 +121,7 @@ def crawlRottenTomatoesReviews(URL: str, baseURL: str, mustIncludeAll: list[str]
         line = str(link.get('href'))
         if line != "None":
             if containsAll(line, mustIncludeAll) and containsAny(line, mustIncludeAny) \
-                    and not (containsAll(line, mustExcludeAll) or containsAny(line, mustExcludeAny)):
+                    and not (containsAll(line, mustExcludeAll) and containsAny(line, mustExcludeAny)):
 
                 if 'https://' in line:
                     # print(link.get('href'))
@@ -176,7 +176,7 @@ if __name__ == '__main__':
     getBodyText("https://www.nme.com/reviews/game-thrones-season-8-episode-1-review-game-reunions-winterfell-night-king-pivots-art-installations-2476817")
     crawlRottenTomatoes("https://www.rottentomatoes.com/tv/game-of-thrones", "https://www.rottentomatoes.com", ["tv", "game-of-throne"])
     crawlRottenTomatoesReviews("https://www.rottentomatoes.com/tv/game-of-thrones/s08/reviews", "https://www.rottentomatoes.com",
-                               mustExcludeAll=["www.rottentomatoes.com"])
+                               mustExcludeAll=["rottentomatoes"])
 
 
     # Build a function to filter out links with certain keywords
