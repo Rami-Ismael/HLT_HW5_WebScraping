@@ -25,7 +25,7 @@ def pre_process(text: str):
 
     text = text.lower()
     tokens = word_tokenize(text)
-    excludingWords = list(stopwords.words("english"))
+    excludingWords = List(stopwords.words("english"))
     excludingWords.extend(string.punctuation)
     excludingWords.extend(string.whitespace)
 
@@ -36,7 +36,7 @@ def pre_process(text: str):
     return returnTokens
 
 
-def frequncy(text_tokens: list[str]):
+def frequncy(text_tokens: List[str]):
     freq_dict = dict()
     for token in text_tokens:
         if token in freq_dict.keys():
@@ -67,12 +67,12 @@ def webCrawler():
     pass
 
 
-def getBodyText(URL: str, tokensLength: int = 10, excludeAnyList: list[str] = [],DEBUG: bool = False, timeoutSeconds: int = 10):
+def getBodyText(URL: str, tokensLength: int = 10, excludeAnyList: List[str] = [],DEBUG: bool = False, timeoutSeconds: int = 10):
     try:
         response = request.urlopen(URL).read().decode('utf8')
         # response = requests.get(URL, timeout=timeoutSeconds)
     except HTTPError:
-        print(f"HTTP Error Exception occured when accessing {URL}... \n\tNow returning an empty list...")
+        print(f"HTTP Error Exception occured when accessing {URL}... \n\tNow returning an empty List...")
         return []
     soup = BeautifulSoup(response, features="html.parser")
 
@@ -98,7 +98,7 @@ def getBodyText(URL: str, tokensLength: int = 10, excludeAnyList: list[str] = []
     return bodySents
 
 
-def containsAny(line: str, AnyIncludeList: list[str]):
+def containsAny(line: str, AnyIncludeList: List[str]):
     if len(AnyIncludeList) == 0:
         return True
     for expr in AnyIncludeList:
@@ -107,7 +107,7 @@ def containsAny(line: str, AnyIncludeList: list[str]):
     return False
 
 
-def containsAll(line: str, MustIncludeList: list[str]):
+def containsAll(line: str, MustIncludeList: List[str]):
     for expr in MustIncludeList:
         if line.find(expr) == -1:
             return False
@@ -117,8 +117,8 @@ def containsAll(line: str, MustIncludeList: list[str]):
 pageNumPattern = re.compile(r"(\?page=)\d+$")
 
 
-def crawlRottenTomatoesReviews(URL: str, baseURL: str, mustIncludeAll: list[str] = [], mustIncludeAny: list[str] = [],
-                               mustExcludeAll: list[str] = [], mustExcludeAny: list[str] = [],
+def crawlRottenTomatoesReviews(URL: str, baseURL: str, mustIncludeAll: List[str] = [], mustIncludeAny: List[str] = [],
+                               mustExcludeAll: List[str] = [], mustExcludeAny: List[str] = [],
                                debug: bool = False, pageNum: int = 1, linksListLenLimit: int = 1,
                                lineLenLimit: int = 10):
     if (pageNumPattern.search(URL) != None):
@@ -152,8 +152,8 @@ def crawlRottenTomatoesReviews(URL: str, baseURL: str, mustIncludeAll: list[str]
         return outLinks
 
 
-def startCrawl(urlList: list[str], baseURL: str, mustIncludeAll: list[str] = [], mustIncludeAny: list[str] = [],
-               mustExcludeAll: list[str] = [], mustExcludeAny: list[str] = [],
+def startCrawl(urlList: List[str], baseURL: str, mustIncludeAll: List[str] = [], mustIncludeAny: List[str] = [],
+               mustExcludeAll: List[str] = [], mustExcludeAny: List[str] = [],
                debug: bool = False, pageNum: int = 1, linksLenLimit: int = 1):
     crawledLinks = []
     for url in urlList:
@@ -176,7 +176,7 @@ def startCrawl(urlList: list[str], baseURL: str, mustIncludeAll: list[str] = [],
 directoryTokensRemovePattern = re.compile(r"[\\/:*?,`\'\"<>|&^()\{\}\(\)\[\]\%\$\#\@\!]+")
 
 
-def writeOutCrawls(baseOutputDir: str, crawlsList: list[WebCrawls], excludeAnyList: list[str]= [],pickelOutputDir: str = "pickles", replaceToken: str = "_", debug: bool = False):
+def writeOutCrawls(baseOutputDir: str, crawlsList: List[WebCrawls], excludeAnyList: List[str]= [],pickelOutputDir: str = "pickles", replaceToken: str = "_", debug: bool = False):
     # This function expects that whatever output directory we are at it will end in '/'
     webCrawlsDir = "WebCrawls"
     for crawlObj in crawlsList:
@@ -227,7 +227,7 @@ def cleanText(text: str):
 
 def cleanTextFiles(baseDirectory: str, outputDirectory: str, debug: bool = False, processedFileModifier: str = "Proc_"):
     currentPath = os.path.join(os.getcwd(), baseDirectory)
-    for filename in os.listdir(currentPath):
+    for filename in os.Listdir(currentPath):
         innerPath = os.path.join(os.getcwd(), baseDirectory, filename)
         if os.path.isdir(innerPath):
             print(f"Now Processing / Cleaning folder {innerPath}")
@@ -283,8 +283,8 @@ if __name__ == '__main__':
 
     startingLinks = []
     for i in range(1, 9):
-        startingLinks.append(f"https://www.rottentomatoes.com/tv/game-of-thrones/s0{i}/reviews")
-    print(f"Starting links list: \n\t{startingLinks}")
+        startingLinks.append( f"https://www.rottentomatoes.com/tv/game-of-thrones/s0{i}/reviews" )
+    print(f"Starting links List: \n\t{startingLinks}")
     writeOutLocation = "output"
     excludeLinksList = ["rottentomatoes", "youtube", "cookies", "fandango", "latimes", "philly.com"]
     excludeBodyLinesList = ["Company Number", "company number", "Registered Office", "registered office", "authorised and regulated", "Media Ltd", "TCA", "©"]
