@@ -1,7 +1,10 @@
 import re
+import socket
 import urllib
 from urllib import request
 import urllib.request
+from urllib.error import HTTPError
+
 import nltk
 from bs4 import BeautifulSoup
 from nltk.tokenize import word_tokenize
@@ -14,9 +17,6 @@ import requests
 
 # import selenium
 # import lxml
-
-
-
 
 
 def pre_process(text: str):
@@ -66,13 +66,16 @@ def webCrawler():
     pass
 
 
-def getBodyText(URL: str, tokensLength: int = 5, DEBUG: bool = False):
-    # response = request.urlopen(URL).read().decode('utf8')
-    # soup = BeautifulSoup(response, features="html.parser")
-    # text = soup.get_text()
+def getBodyText(URL: str, tokensLength: int = 10, DEBUG: bool = False, timeoutSeconds: int = 10):
+    try:
+        response = request.urlopen(URL).read().decode('utf8')
+        # response = requests.get(URL, timeout=timeoutSeconds)
+    except HTTPError:
+        print(f"HTTP Error Exception occured when accessing {URL}... \n\tNow returning an empty list...")
+        return []
+    soup = BeautifulSoup(response, features="html.parser")
 
-    response = requests.get(URL)
-    soup = BeautifulSoup(response.text, features="html.parser")
+    # soup = BeautifulSoup(response.text, features="html.parser")
     text = soup.get_text()
 
     # tokens = text.splitlines()
@@ -82,16 +85,13 @@ def getBodyText(URL: str, tokensLength: int = 5, DEBUG: bool = False):
 
     tags = soup.body
 
-    bodySents = [str(line).strip() for line in soup.body.strings if len(line.strip().split()) > tokensLength
-                 and line.find("©") == -1]
+    # bodySents = [str(line).strip() for line in soup.body.strings if len(line.strip().split()) > tokensLength
+    #              and line.find("©") == -1]
+
+    bodySents = [str(line) for line in soup.body.strings if len(line.strip().split()) > tokensLength and line.find("©") == -1]
 
     if DEBUG:
         print(bodySents)
-
-    # import re
-    # text_chunks = [chunk for chunk in bodySents if not re.match(r'^\s*$', chunk)]
-    # for i, chunk in enumerate(text_chunks):
-    #     print(i + 1, chunk)
 
     return bodySents
 
@@ -172,47 +172,72 @@ def startCrawl(urlList: list[str], baseURL: str, mustIncludeAll: list[str] = [],
 
 
 directoryTokensRemovePattern = re.compile(r"[\\/:*?,`\'\"<>|&^()\{\}\(\)\[\]\%\$\#\@\!]+")
-def writeOutCrawls(baseOutputDir: str, crawlsList: list[WebCrawls], replaceToken: str = "_"):
+
+
+def writeOutCrawls(baseOutputDir: str, crawlsList: list[WebCrawls], pickelOutputDir: str = "pickles", replaceToken: str = "_", debug: bool = False):
     # This function expects that whatever output directory we are at it will end in '/'
-    for crawl in crawlsList:
-        outDir = baseOutputDir
-        folder = directoryTokensRemovePattern.sub(replaceToken, crawl.baseURL)
-        outDir += folder + "/"
-        for link in crawl.urlList:
-            outFileName = directoryTokensRemovePattern.sub(replaceToken, link)
-            with openFile(outDir + outFileName + ".txt", "w") as outFile:
+    webCrawlsDir = "WebCrawls"
+    for crawlObj in crawlsList:
+        innerFolder1 = directoryTokensRemovePattern.sub(replaceToken, crawlObj.baseURL)
+        if not os.path.exists(os.path.join(os.getcwd(), pickelOutputDir, webCrawlsDir)):
+            try:
+                if debug:
+                    print(
+                        f"Path does not exist, now creating it... {os.path.join(os.getcwd(), pickelOutputDir, webCrawlsDir )}")
+                os.makedirs(os.path.join(os.getcwd(), pickelOutputDir, webCrawlsDir))
+            except IOError as error:
+                print(error)
+                continue
+        writePickle(os.path.join(os.getcwd(), pickelOutputDir, webCrawlsDir, innerFolder1 + ".pickle"),
+                    crawlObj, innerFolder1 + ".pickle")
 
+        for link in crawlObj.urlList:
+            outFileName = directoryTokensRemovePattern.sub(replaceToken, link) + ".txt"
+
+            try:
+                if debug:
+                    print(f"Now scraping \'{link}\'")
+                bodyText = getBodyText(link)
+                if len(bodyText) < 1:
+                    continue
+            except Exception as error:
+                print(error)
+                continue
+
+            if not os.path.exists(os.path.join(os.getcwd(), baseOutputDir, innerFolder1)):
                 try:
-                    getBodyText(link)
-                except IOError:
-                    print("An error occured")
+                    if debug:
+                        print(
+                            f"Path does not exist, now creating it... {os.path.join(os.getcwd(), baseOutputDir, innerFolder1)}")
+                    os.makedirs(os.path.join(os.getcwd(), baseOutputDir, innerFolder1))
+                except IOError as error:
+                    print(error)
+                    continue
 
+            with open(os.path.join(os.getcwd(), baseOutputDir, innerFolder1, outFileName), "w",
+                      encoding="utf-8") as outFile:
+                for line in bodyText:
+                    outFile.write(line + "\n")
 
 
 if __name__ == '__main__':
-    # test("https://gameofthrones.fandom.com/wiki/Jon_Snow")
-    getBodyText(
-        "https://www.nme.com/reviews/game-thrones-season-8-episode-1-review-game-reunions-winterfell-night-king-pivots-art-installations-2476817")
-
-    # crawlRottenTomatoesReviews("https://www.rottentomatoes.com/tv/game-of-thrones/s08/reviews",
-    #                            "https://www.rottentomatoes.com",
-    #                            mustExcludeAny=["rottentomatoes", "youtube", "cookies"], pageNum=1)
 
     startingLinks = []
     for i in range(1, 9):
         startingLinks.append(f"https://www.rottentomatoes.com/tv/game-of-thrones/s0{i}/reviews")
-    print(startingLinks)
+    print(f"Starting links list: \n\t{startingLinks}")
+    writeOutLocation = "output"
 
-    # startingLinks = ["https://www.rottentomatoes.com/tv/game-of-thrones/s03/reviews"]
-    # crawledLinks = startCrawl(startingLinks,
-    #                           "https://www.rottentomatoes.com",
-    #                           mustExcludeAny=["rottentomatoes", "youtube", "cookies", "fandango"], pageNum=1,
-    #                           debug=True)
+    needToCrawl = True
+    showDebug = True
+    if needToCrawl:
+        crawledLinks = startCrawl(startingLinks, "https://www.rottentomatoes.com",
+                                  mustExcludeAny=["rottentomatoes", "youtube", "cookies", "fandango"],
+                                  pageNum=1, debug=showDebug)
+        writeOutCrawls(writeOutLocation, crawledLinks, debug=showDebug)
 
-    writeOutLocation = "output\\"
-    cr = WebCrawls("TestBaseURL",
-              ["https://www.nme.com/reviews/game-thrones-season-8-episode-1-review-game-reunions-winterfell-night-king-pivots-art-installations-2476817"])
+    # This portion of main is meant to only be executed if there the writeOutLocation folder is present and filled with text files...
 
-    writeOutCrawls(writeOutLocation, [cr])
-    # Build a function to filter out links with certain keywords
-    # Filter out links that contain rotten tomatoes in it at all so I can exclusively get non rotten tomatoe links
+    # getBodyText("http://www.kansascity.com/entertainment/tv/article18168266.html", DEBUG=True)
+
+    print()
