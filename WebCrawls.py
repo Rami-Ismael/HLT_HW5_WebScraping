@@ -6,6 +6,8 @@ class WebCrawls:
         super().__init__()
         self.baseURL = baseURL
         self.urlList = urlList
+        self.tfDict = dict()
+        self.idfDict = dict()
 
 
 

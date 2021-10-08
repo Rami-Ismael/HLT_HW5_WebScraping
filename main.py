@@ -1,3 +1,4 @@
+import os
 import re
 import socket
 import urllib
@@ -66,7 +67,7 @@ def webCrawler():
     pass
 
 
-def getBodyText(URL: str, tokensLength: int = 10, DEBUG: bool = False, timeoutSeconds: int = 10):
+def getBodyText(URL: str, tokensLength: int = 10, excludeAnyList: list[str] = [],DEBUG: bool = False, timeoutSeconds: int = 10):
     try:
         response = request.urlopen(URL).read().decode('utf8')
         # response = requests.get(URL, timeout=timeoutSeconds)
@@ -88,7 +89,8 @@ def getBodyText(URL: str, tokensLength: int = 10, DEBUG: bool = False, timeoutSe
     # bodySents = [str(line).strip() for line in soup.body.strings if len(line.strip().split()) > tokensLength
     #              and line.find("©") == -1]
 
-    bodySents = [str(line) for line in soup.body.strings if len(line.strip().split()) > tokensLength and line.find("©") == -1]
+    bodySents = [str(line) for line in soup.body.strings if len(line.strip().split()) > tokensLength
+                 and not containsAny(line, excludeAnyList)]
 
     if DEBUG:
         print(bodySents)
@@ -174,7 +176,7 @@ def startCrawl(urlList: list[str], baseURL: str, mustIncludeAll: list[str] = [],
 directoryTokensRemovePattern = re.compile(r"[\\/:*?,`\'\"<>|&^()\{\}\(\)\[\]\%\$\#\@\!]+")
 
 
-def writeOutCrawls(baseOutputDir: str, crawlsList: list[WebCrawls], pickelOutputDir: str = "pickles", replaceToken: str = "_", debug: bool = False):
+def writeOutCrawls(baseOutputDir: str, crawlsList: list[WebCrawls], excludeAnyList: list[str]= [],pickelOutputDir: str = "pickles", replaceToken: str = "_", debug: bool = False):
     # This function expects that whatever output directory we are at it will end in '/'
     webCrawlsDir = "WebCrawls"
     for crawlObj in crawlsList:
@@ -197,7 +199,7 @@ def writeOutCrawls(baseOutputDir: str, crawlsList: list[WebCrawls], pickelOutput
             try:
                 if debug:
                     print(f"Now scraping \'{link}\'")
-                bodyText = getBodyText(link)
+                bodyText = getBodyText(link, excludeAnyList=excludeAnyList)
                 if len(bodyText) < 1:
                     continue
             except Exception as error:
@@ -220,6 +222,63 @@ def writeOutCrawls(baseOutputDir: str, crawlsList: list[WebCrawls], pickelOutput
                     outFile.write(line + "\n")
 
 
+def cleanText(text: str):
+    return re.sub("\s+", " ", text).strip()
+
+def cleanTextFiles(baseDirectory: str, outputDirectory: str, debug: bool = False, processedFileModifier: str = "Proc_"):
+    currentPath = os.path.join(os.getcwd(), baseDirectory)
+    for filename in os.listdir(currentPath):
+        innerPath = os.path.join(os.getcwd(), baseDirectory, filename)
+        if os.path.isdir(innerPath):
+            print(f"Now Processing / Cleaning folder {innerPath}")
+            cleanTextFiles(os.path.join(baseDirectory, filename), os.path.join(outputDirectory, filename))
+        elif os.path.isfile(innerPath):
+            with open(innerPath, 'r', encoding="utf-8") as inFile:  # open in readonly mode
+                rawText = inFile.read()
+                rawText = cleanText(rawText)
+                sents = nltk.sent_tokenize(rawText)
+
+                outputPath = os.path.join(os.getcwd(), outputDirectory)
+                if not os.path.exists(outputPath):
+                    try:
+                        if debug:
+                            print(
+                                f"Path does not exist, now creating it... {outputPath}")
+                        os.makedirs(outputPath)
+                    except IOError as error:
+                        print(error)
+                        continue
+
+                with open(os.path.join(outputPath, processedFileModifier + filename), "w", encoding="utf-8") as outFile:
+                    for line in sents:
+                        outFile.write(line + "\n")
+
+
+def create_tf_dict(text):
+    tf_dict = {}
+    tokens = word_tokenize(text)
+    tokens = [w for w in tokens if w.isalpha() and w not in stopwords]
+
+    # get term frequencies
+    for t in tokens:
+        if t in tf_dict:
+            tf_dict[t] += 1
+        else:
+            tf_dict[t] = 1
+
+    # get term frequencies in a more Pythonic way
+    token_set = set(tokens)
+    tf_dict = {t: tokens.count(t) for t in token_set}
+
+    # normalize tf by number of tokens
+    for t in tf_dict.keys():
+        tf_dict[t] = tf_dict[t] / len(tokens)
+
+    return tf_dict
+
+
+
+
 if __name__ == '__main__':
 
     startingLinks = []
@@ -227,16 +286,22 @@ if __name__ == '__main__':
         startingLinks.append(f"https://www.rottentomatoes.com/tv/game-of-thrones/s0{i}/reviews")
     print(f"Starting links list: \n\t{startingLinks}")
     writeOutLocation = "output"
+    excludeLinksList = ["rottentomatoes", "youtube", "cookies", "fandango", "latimes", "philly.com"]
+    excludeBodyLinesList = ["Company Number", "company number", "Registered Office", "registered office", "authorised and regulated", "Media Ltd", "TCA", "©"]
 
     needToCrawl = True
     showDebug = True
     if needToCrawl:
         crawledLinks = startCrawl(startingLinks, "https://www.rottentomatoes.com",
-                                  mustExcludeAny=["rottentomatoes", "youtube", "cookies", "fandango"],
+                                  mustExcludeAny=excludeLinksList,
                                   pageNum=1, debug=showDebug)
-        writeOutCrawls(writeOutLocation, crawledLinks, debug=showDebug)
+        writeOutCrawls(writeOutLocation, crawledLinks, excludeAnyList=excludeBodyLinesList, debug=showDebug)
 
     # This portion of main is meant to only be executed if there the writeOutLocation folder is present and filled with text files...
+
+    processedWriteOutLocation = "processed_" + writeOutLocation
+    cleanTextFiles(writeOutLocation, processedWriteOutLocation)
+
 
     # getBodyText("http://www.kansascity.com/entertainment/tv/article18168266.html", DEBUG=True)
 
