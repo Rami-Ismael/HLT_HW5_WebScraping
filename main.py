@@ -24,15 +24,26 @@ def pre_process(text: str):
     print(string.punctuation)
 
     text = text.lower()
-    tokens = word_tokenize(text)
-    excludingWords = List(stopwords.words("english"))
+    tokens = word_tokenize(text  )
+    excludingWords = list(stopwords.words("english"))
+    excludingWords.extend( list(stopwords.words("spanish")) )
     excludingWords.extend(string.punctuation)
     excludingWords.extend(string.whitespace)
+    excludingWords.append("t")
+    excludingWords.append("\"")
+    excludingWords.append("\'")
+    excludingWords.append("-")
+    excludingWords.append("\'\'")
+    excludingWords.append("\`")
+    excludingWords.append( "n\'t")
+    excludingWords.append( "\'s")
+    excludingWords.append( "_")
 
     returnTokens = []
     for token in tokens:
         if token not in excludingWords:
-            returnTokens.append(token)
+            if len(token) >=3:
+                returnTokens.append(token)
     return returnTokens
 
 
@@ -43,6 +54,7 @@ def frequncy(text_tokens: List[str]):
             freq_dict[token] = freq_dict[token] + 1
         else:
             freq_dict[token] = 1
+    return freq_dict
 
 
 def getWebpage(URL: str):
