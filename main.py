@@ -227,7 +227,7 @@ def cleanText(text: str):
 
 def cleanTextFiles(baseDirectory: str, outputDirectory: str, debug: bool = False, processedFileModifier: str = "Proc_"):
     currentPath = os.path.join(os.getcwd(), baseDirectory)
-    for filename in os.Listdir(currentPath):
+    for filename in os.listdir(currentPath):
         innerPath = os.path.join(os.getcwd(), baseDirectory, filename)
         if os.path.isdir(innerPath):
             print(f"Now Processing / Cleaning folder {innerPath}")
