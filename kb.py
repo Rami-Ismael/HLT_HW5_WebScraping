@@ -2,9 +2,9 @@ from dataclasses import dataclass
 from enum import Enum
 import pickle
 class Profession(Enum):
-    Knight = 0
-    Lord = 1
-    Priestress = 2
+    Knight = "Knight"
+    Lord = "Lord"
+    Priestress = "Priestress"
 @dataclass
 class Entity:
     name:str
@@ -24,10 +24,19 @@ class KB:
         pickle.dump( self.Entities, file_to_write )
     def add_profession(self, qid , profession) -> None:
         self.Entities[qid].profession = profession
+    def determine_profession(self, qid):
+        if self.Entities[qid].profession ==None:
+            return "They have no Profession"
+        return self.Entities[qid].profession.name
     ## assume that person have onl 1 to 1 relationship
     def add_realtionship(self, qid , rela) -> None:
         try:
             self.Entities[qid].relationship = self.Entities[qid].relationship.union( rela )
         except:
             self.Entities[qid].relationship =  rela
+    def number_of_profession(self) -> int:
+        return len(Profession)
+    def freq(self, qid) -> int:
+        return self.Entities[qid].freq
+    
 

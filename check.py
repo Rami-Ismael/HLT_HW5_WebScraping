@@ -93,3 +93,15 @@ loaded_dictionary = pickle.load(file_to_read)
 
 print(loaded_dictionary)
 
+## What is stark profession
+print("What is Start profession? ")
+print( " Stark Profession is "+kb.determine_profession(qid("stark")) )
+
+## How many profession are the in game throne
+print("How many professionals are in the game of throne")
+print( "There is "+ str(kb.number_of_profession()) + " profession in game of throne")
+
+## how many time did jon appear in the movie
+print( "How many time did jon appear in the game throne")
+print( "Jon appear "+ str(kb.freq(qid("jon"))) +" times in game of throne")
+

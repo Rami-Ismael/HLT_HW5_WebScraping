@@ -398,3 +398,14 @@ if __name__ == '__main__':
 
 
     kb.save_entities()
+    
+    ## What is stark profession
+    print( " Stark Profession is "+kb.determine_profession(qid("stark")) )
+
+    ## How many profession are the in game throne
+    print("How many professionals are in the game of throne")
+    print( "There is "+ kb.number_of_profession() + " profession in game of throne")
+
+    ## how many time did jon appear in the movie
+    print( " How many time did jon appear in the game throne")
+    print( " Job appear "+ kb.freq(qid("jon")) +" in game of throne")
