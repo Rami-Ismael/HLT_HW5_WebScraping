@@ -71,14 +71,17 @@ for x in range( 5, len(top_term)):
     kb.add_entity( name = top_term[x] , freq = freq , qid = val , relationship = None )
 
 ## add rob
-kb.add_realtionship( qid("rob") , {qid("Lord Eddard Stark of Winterfell") , "The eldest sone of Eddard Stark of Winterfell"})
+kb.add_realtionship( qid("rob") , {qid("Lord Eddard Stark of Winterfell") : "The eldest sone of Eddard Stark of Winterfell"})
 
 ## emilia
-kb.add_realtionship(qid("emilia"), {qid("Targaryen"), "She is a Targaryen"})
+kb.add_realtionship(qid("emilia"), {qid("Targaryen"):"She is a Targaryen"})
 
 ## melisandre
-kb.add_realtionship(qid( "melisandre"), {qid("melisandre") , "She is hte Red Priestress"})
+kb.add_realtionship(qid( "melisandre"), {qid("melisandre") : "She is hte Red Priestress"})
 kb.add_profession(qid("melisandre") , Profession.Priestress) 
+
+## jon
+kb.add_realtionship( qid( "jon") , { qid("lyanna") : "He is the sone of Lyanna Stark " })
 
 
 kb.save_entities()
