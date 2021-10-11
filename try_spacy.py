@@ -1,13 +1,22 @@
 import spacy
 from spacy.kb import KnowledgeBase
 
-def qid( word , primes ):
+def qid( word ):
+    ## Create qid
+    n = 30
+    primes = []
+    for i in range( 2 , n+1 ):
+        for j in range(2, int(i ** 0.5) + 1):
+            if i%j ==0:
+                break
+        else:
+            primes.append(i)
     prim_freq = dict()
     for x in word:
-        if  primes[ ord(x-97)] in prim_freq.keys(): 
-            prim_freq[ primes[ ord(x-97)] ]  = prim_freq[ primes[ ord(x-97)]] +1
+        if  primes[ ord(x) -97 ] in prim_freq.keys(): 
+            prim_freq[ primes[ ord(x) -97 ] ]  = prim_freq[ primes[ ord(x) -97 ]] +1
         else:
-            prim_freq[ primes[ ord(x-97)]]= 1
+            prim_freq[ primes[ ord(x) -97 ]]= 1
     val = 0
     for x  in prim_freq.items():
         prime_val = x[0]
@@ -53,8 +62,4 @@ if __name__ == '__main__':
     ## Create the knowledgebase using spacy
     kb = KnowledgeBase( vocab = nlp.vocab , entity_vecotr_lenght = 300)
 
-    ## add all the term into the knowldege base
-    for x in top_term:
-        desc_doc = nlp(x)
-        desc_enc = desc_doc.vector
-        kb.add_entity( entity = qid( x , primes ) , entity_vectors = desc_enc , freq = )
+

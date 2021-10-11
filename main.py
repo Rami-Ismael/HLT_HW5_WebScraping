@@ -317,4 +317,22 @@ if __name__ == '__main__':
 
     # getBodyText("http://www.kansascity.com/entertainment/tv/article18168266.html", DEBUG=True)
 
-    print()
+    
+    file_to_read = open("term_freq.pickle", "rb")
+
+
+    loaded_dictionary = pickle.load(file_to_read)
+
+    ## Choose the 10 term 
+    throne = "throne"
+    tyrion = "tyrion"
+    stark = "stark"
+    martin = "martin"
+    arya = "arya"
+    cersei = "cersei"
+    dragon  = "dragon"
+    emilia  = "emilia"
+    melisandre = "melisandre"
+    kingdom = "kingdom"
+    top_term = [throne, tyrion, stark, martin , arya , cersei , dragon , emilia , melisandre , kingdom ]
+

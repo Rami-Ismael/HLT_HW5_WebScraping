@@ -1,4 +1,5 @@
 from io import FileIO
+import math
 import os
 import pickle
 from typing import List
@@ -13,21 +14,21 @@ def freq_dictionary(text_tokens: List[str]):
             freq_dict[token] = 1
     return freq_dict
 def create_tf_dict( text_tokens: List[str]):
-    freq_dict = dict()
-    for token in text_tokens:
-        if token in freq_dict.keys():
-            freq_dict[token] = freq_dict[token] + 1
-        else:
-            freq_dict[token] = 1
-    for t in freq_dict.keys():
-        freq_dict[t] = freq_dict[t] / len( freq_dict.keys() )
-    return freq_dict
-
+     freq_dict = dict()
+     for token in text_tokens:
+         if token in freq_dict.keys():
+             freq_dict[token] = freq_dict[token] + 1
+         else:
+             freq_dict[token] = 1
+     for t in freq_dict.keys():
+         freq_dict[t] = freq_dict[t] / len( freq_dict.keys() )
+     return freq_dict
 def create_term_freq():
  vocab_set = set()
  freq_dict = dict()
  ## Create a list of freq_dict
  list_freq_dict = []
+ term_freq = dict()
  ## the directory of all the output text
  path_1 =  os.path.join( os.getcwd(),  "output" )
  for files  in os.listdir( path_1 ):
@@ -53,15 +54,24 @@ def create_term_freq():
              
              vocab_set.update(set ( tokens ))
  
- 
+ print( "Sorting base on term frequency ")
  print(  sorted(freq_dict.items() , key = lambda x: x[1] , reverse = True ) , file  = open( "acc.txt" , "a"))
  
  ## the sorted list of tokens
  for x in sorted ( freq_dict.items() , key = lambda item: item[1] , reverse = True )[:40]  :
      print( x)
  
- file_to_write = open ( "term_freq.txt" , "wb")
+ file_to_write = open ( "term_freq.pickle" , "wb")
  
  pickle.dump( freq_dict, file_to_write )
-
-
+ 
+ ## idf
+ idf_dict = {}
+ for term in vocab_set:
+     count =0
+     for x in list_freq_dict:
+         if term in list_freq_dict.keys() :
+             count = count + 1
+     idf_dict[term] = math.log( (1+len(list_freq_dict))/ ( 1+ count ) )
+ print( "idf for throne " , idf_dict["throne"])
+ 

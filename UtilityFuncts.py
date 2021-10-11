@@ -20,3 +20,26 @@ def writePickle(filepath: str, object, objName: str = ""):
     with openFile(filepath, mode="wb") as pickleFile:
         pickle.dump(object, pickleFile)
         print(f"Successfully wrote out the obj: {objName} to \'{filepath}\'")
+def qid( word ):
+    ## Create qid
+    n = 10000
+    primes = []
+    for i in range( 2 , n+1 ):
+        for j in range(2, int(i ** 0.5) + 1):
+            if i%j ==0:
+                break
+        else:
+            primes.append(i)
+    prim_freq = dict()
+    for x in word:
+        if  primes[ ord(x) - 97 ] in prim_freq.keys(): 
+            prim_freq[ primes[ ord(x) -97 ] ]  = prim_freq[ primes[ ord(x) -97 ]] +1
+        else:
+            prim_freq[ primes[ ord(x) -97 ]]= 1
+    val = 0
+    for x  in prim_freq.items():
+        prime_val = x[0]
+        freq = x[1]
+        val   =  (   prime_val *freq)  + val
+    return val
+            
