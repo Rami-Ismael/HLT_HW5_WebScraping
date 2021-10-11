@@ -19,11 +19,11 @@ stark = "stark"
 robert = "robert"
 arya = "arya"
 cersei = "cersei"
-dragon  = "dragon"
+rob  = "rob"
 emilia  = "emilia"
 melisandre = "melisandre"
 jon = "jon"
-top_term = [throne, tyrion, stark, robert , arya , cersei , dragon , emilia , melisandre , jon ]
+top_term = [throne, tyrion, stark, robert , arya , cersei , rob , emilia , melisandre , jon ]
 
 ## add throne 
 kb = KB(Entities= dict())
@@ -58,7 +58,7 @@ kb.add_profession(val , Profession.Lord)
 ## arya 
 freq = loaded_dictionary["arya"]
 val = qid("arya")
-kb.add_entity( name = "stark" , freq = freq , qid = val , relationship = None )
+kb.add_entity( name = "arya" , freq = freq , qid = val , relationship = None )
 
 ## cersei
 freq = loaded_dictionary["cersei"]
@@ -69,6 +69,16 @@ for x in range( 5, len(top_term)):
     freq = loaded_dictionary[top_term[x]]
     val = qid(top_term[x])
     kb.add_entity( name = top_term[x] , freq = freq , qid = val , relationship = None )
+
+## add rob
+kb.add_realtionship( qid("rob") , {qid("Lord Eddard Stark of Winterfell") , "The eldest sone of Eddard Stark of Winterfell"})
+
+## emilia
+kb.add_realtionship(qid("emilia"), {qid("Targaryen"), "She is a Targaryen"})
+
+## melisandre
+kb.add_realtionship(qid( "melisandre"), {qid("melisandre") , "She is hte Red Priestress"})
+kb.add_profession(qid("melisandre") , Profession.Priestress) 
 
 
 kb.save_entities()

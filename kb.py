@@ -4,11 +4,13 @@ import pickle
 class Profession(Enum):
     Knight = 0
     Lord = 1
+    Priestress = 2
 @dataclass
 class Entity:
     name:str
     freq:int
     qid:int
+    father: name = None
     relationship:dict()  = None
     profession: Profession = None
 @dataclass(init = True)
