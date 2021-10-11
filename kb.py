@@ -10,7 +10,7 @@ class Entity:
     name:str
     freq:int
     qid:int
-    father: name = None
+    father: str = None
     relationship:dict()  = None
     profession: Profession = None
 @dataclass(init = True)
@@ -26,5 +26,8 @@ class KB:
         self.Entities[qid].profession = profession
     ## assume that person have onl 1 to 1 relationship
     def add_realtionship(self, qid , rela) -> None:
-        self.Entities[qid].relationship = self.Entities[qid].relationship.union( rela )
+        try:
+            self.Entities[qid].relationship = self.Entities[qid].relationship.union( rela )
+        except:
+            self.Entities[qid].relationship =  rela
 
