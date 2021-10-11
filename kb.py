@@ -5,6 +5,12 @@ class Profession(Enum):
     Knight = "Knight"
     Lord = "Lord"
     Priestress = "Priestress"
+    Peasant = "Peasant"
+    Scribe = "Scribe"
+    Slave = "Slave"
+    King = "King"
+    Queen  = "Queen"
+    
 @dataclass
 class Entity:
     name:str
